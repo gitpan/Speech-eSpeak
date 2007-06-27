@@ -114,7 +114,7 @@ our @EXPORT = qw(
 	espeakVOLUME
 );
 
-our $VERSION = '0.1';
+our $VERSION = '0.11';
 
 sub AUTOLOAD {
     # This AUTOLOAD is used to 'autoload' constants from the constant()
@@ -217,7 +217,7 @@ Not implemented yet.
 
 =head2 espeak_Synth($text, $size, $position, $position_type, $end_position, $flags, $unique_identifier, $user_data)
 
-/* Synthesize speech for the specified text.  The speech sound data is passed to the calling program in buffers by means of the callback function specified by espeak_SetSynthCallback(). The command is asynchronous: it is internally buffered and returns as soon as possible. If espeak_Initialize was previously called with AUDIO_OUTPUT_PLAYBACK as argument, the sound data are played by eSpeak.
+   Synthesize speech for the specified text.  The speech sound data is passed to the calling program in buffers by means of the callback function specified by espeak_SetSynthCallback(). The command is asynchronous: it is internally buffered and returns as soon as possible. If espeak_Initialize was previously called with AUDIO_OUTPUT_PLAYBACK as argument, the sound data are played by eSpeak.
 
    text: The text to be spoken, terminated by a zero character. It may be either 8-bit characters, wide characters (wchar_t), or UTF8 encoding.  Which of these is determined by the "flags" parameter.
 
@@ -243,54 +243,45 @@ Not implemented yet.
       espeakENDPAUSE  If set then a sentence pause is added at the end of the text.  If not set then
          this pause is suppressed.
 
-   unique_identifier: message identifier; helpful for identifying later 
-     data supplied to the callback.
+   unique_identifier: message identifier; helpful for identifying later data supplied to the callback.
 
    user_data: pointer which will be passed to the callback function.
 
    Return: EE_OK: operation achieved 
-           EE_BUFFER_FULL: the command can not be buffered; 
-             you may try after a while to call the function again.
+           EE_BUFFER_FULL: the command can not be buffered; you may try after a while to call the function again.
            EE_INTERNAL_ERROR.
-*/
 
 =head2 espeak_Synth_Mark($text, $size, $index_mark, $end_position, $flags, $unique_identifier, $user_data)
 
-/* Synthesize speech for the specified text.  Similar to espeak_Synth() but the start position is specified by the name of a <mark> element in the text.
+   Synthesize speech for the specified text.  Similar to espeak_Synth() but the start position is specified by the name of a <mark> element in the text.
 
    index_mark:  The "name" attribute of a <mark> element within the text which specified the point at which synthesis starts.  UTF8 string.
 
    For the other parameters, see espeak_Synth()
 
    Return: EE_OK: operation achieved
-           EE_BUFFER_FULL: the command can not be buffered; 
-             you may try after a while to call the function again.
+           EE_BUFFER_FULL: the command can not be buffered; you may try after a while to call the function again.
            EE_INTERNAL_ERROR.
-*/
 
 =head2 espeak_Key($key_name)
 
-/* Speak the name of a keyboard key. Currently this just speaks the "key_name" as given
+   Speak the name of a keyboard key. Currently this just speaks the "key_name" as given
 
    Return: EE_OK: operation achieved
-           EE_BUFFER_FULL: the command can not be buffered;
-             you may try after a while to call the function again.
+           EE_BUFFER_FULL: the command can not be buffered; you may try after a while to call the function again.
            EE_INTERNAL_ERROR.
-*/
 
 =head2 espeak_Char($character)
 
-/* Speak the name of the given character 
+   Speak the name of the given character
 
-   Return: EE_OK: operation achieved 
-           EE_BUFFER_FULL: the command can not be buffered; 
-             you may try after a while to call the function again.
+   Return: EE_OK: operation achieved
+           EE_BUFFER_FULL: the command can not be buffered; you may try after a while to call the function again.
            EE_INTERNAL_ERROR.
-*/
 
 =head2 espeak_SetParameter($parameter, $value, $relative)
 
-/* Sets the value of the specified parameter.
+   Sets the value of the specified parameter.
    relative=0   Sets the absolute value of the parameter.
    relative=1   Sets a relative value of the parameter.
 
@@ -304,8 +295,7 @@ Not implemented yet.
       espeakRANGE:   pitch range, range 0-100. 0-monotone, 50=normal
 
       espeakPUNCTUATION:  which punctuation characters to announce:
-         value in espeak_PUNCT_TYPE (none, all, some), 
-         see espeak_GetParameter() to specify which characters are announced.
+         value in espeak_PUNCT_TYPE (none, all, some), see espeak_GetParameter() to specify which characters are announced.
 
       espeakCAPITALS: announce capital letters by:
          0=none,
@@ -314,73 +304,62 @@ Not implemented yet.
          3 or higher, by raising pitch.  This values gives the amount in Hz by which the pitch
             of a word raised to indicate it has a capital letter.
 
-   Return: EE_OK: operation achieved 
-           EE_BUFFER_FULL: the command can not be buffered; 
-             you may try after a while to call the function again.
+   Return: EE_OK: operation achieved
+           EE_BUFFER_FULL: the command can not be buffered; you may try after a while to call the function again.
            EE_INTERNAL_ERROR.
-*/
 
 =head2 espeak_GetParameter($parameter, current)
 
-/* current=0  Returns the default value of the specified parameter.
+   current=0  Returns the default value of the specified parameter.
    current=1  Returns the current value of the specified parameter, as set by SetParameter()
-*/
 
 =head2 espeak_SetPunctuationList($punclist)
 
-/* Specified a list of punctuation characters whose names are to be spoken when the
+   Specified a list of punctuation characters whose names are to be spoken when the
    value of the Punctuation parameter is set to "some".
 
    punctlist:  A list of character codes, terminated by a zero character.
 
    Return: EE_OK: operation achieved 
-           EE_BUFFER_FULL: the command can not be buffered; 
-             you may try after a while to call the function again.
+           EE_BUFFER_FULL: the command can not be buffered; you may try after a while to call the function again.
            EE_INTERNAL_ERROR.
-*/
+
 
 =head2 espeak_SetPhonemeTrace($value, $stream)
 
-/* Controls the output of phoneme symbols for the text
+   Controls the output of phoneme symbols for the text
    value=0  No phoneme output (default)
    value=1  Output the translated phoneme symbols for the text
    value=2  as (1), but also output a trace of how the translation was done (matching rules and list entries)
 
    stream   output stream for the phoneme symbols (and trace).  If stream=NULL then it uses stdout.
-*/
 
 =head2 espeak_CompileDictionary($path, $log)
 
-void espeak_CompileDictionary(const char *path, FILE *log);
-/* Compile pronunciation dictionary for a language which corresponds to the currently selected voice.  The required voice should be selected before calling this function.
+   Compile pronunciation dictionary for a language which corresponds to the currently selected voice.  The required voice should be selected before calling this function.
 
    path:  The directory which contains the language's '_rules' and '_list' files.
           'path' should end with a path separator character ('/').
    log:   Stream for error reports and statistics information. If log=NULL then stderr will be used.
-*/
 
 =head2 espeak_ListVoices($voice_spec)
 
-/* Reads the voice files from espeak-data/voices and creates an array of espeak_VOICE pointers. The list is terminated by a NULL pointer
+   Reads the voice files from espeak-data/voices and creates an array of espeak_VOICE pointers. The list is terminated by a NULL pointer
 
    If voice_spec is NULL then all voices are listed.
    If voice spec is give, then only the voices which are compatible with the voice_spec are listed, and they are listed in preference order.
-*/
 
 =head2 espeak_SetVoiceByName($name)
 
-/* Searches for a voice with a matching "name" field.  Language is not considered.
-   "name" is a UTF8 string.
+   Searches for a voice with a matching "name" field.  Language is not considered. "name" is a UTF8 string.
 
    Return: EE_OK: operation achieved
-           EE_BUFFER_FULL: the command can not be buffered;
-             you may try after a while to call the function again.
+           EE_BUFFER_FULL: the command can not be buffered; you may try after a while to call the function again.
            EE_INTERNAL_ERROR.
-*/
 
 =head2 espeak_SetVoiceByProperties($voice_spec)
 
-/* An espeak_VOICE structure is used to pass criteria to select a voice.  Any of the following fields may be set:
+   An espeak_VOICE structure is used to pass criteria to select a voice.  Any of the following fields may be set:
 
    name     NULL, or a voice name
 
@@ -390,63 +369,56 @@ void espeak_CompileDictionary(const char *path, FILE *log);
 
    age      0=not specified, or an age in years
 
-   variant  After a list of candidates is produced, scored and sorted, "variant" is used to index
-            that list and choose a voice.
+   variant  After a list of candidates is produced, scored and sorted, "variant" is used to index that list and choose a voice.
             variant=0 takes the top voice (i.e. best match). variant=1 takes the next voice, etc
-*/
 
 =head2 espeak_GetCurrentVoice()
 
-/* Returns the espeak_VOICE data for the currently selected voice.
+   Returns the espeak_VOICE data for the currently selected voice.
    This is not affected by temporary voice changes caused by SSML elements such as <voice> and <s>
-*/
 
 =head2 espeak_Cancel()
 
-/* Stop immediately synthesis and audio output of the current text. When this function returns, the audio output is fully stopped and the synthesizer is ready to synthesize a new message.
+   Stop immediately synthesis and audio output of the current text. When this function returns, the audio output is fully stopped and the synthesizer is ready to synthesize a new message.
 
-   Return: EE_OK: operation achieved 
+   Return: EE_OK: operation achieved
            EE_INTERNAL_ERROR.
-*/
 
 =head2 epseak_IsPlaying()
 
-/* Returns 1 if audio is played, 0 otherwise.
-*/
+   Returns 1 if audio is played, 0 otherwise.
+
 
 =head2 espeak_Synchronize()
 
-/* This function returns when all data have been spoken.
+   This function returns when all data have been spoken.
    Return: EE_OK: operation achieved
            EE_INTERNAL_ERROR.
-*/
 
 =head2 espeak_Terminate()
 
-/* last function to be called.
-   Return: EE_OK: operation achieved 
+   last function to be called.
+   Return: EE_OK: operation achieved
            EE_INTERNAL_ERROR.
-*/
 
 =head2 espeak_Info()
 
-/* Returns the version number string.
+   Returns the version number string.
    The parameter is for future use, and should be set to NULL
-*/
 
 =head1 TYPES
 
 =head2 espeak_POSITION_TYPE
 
-typedef enum {
+   typedef enum {
         POS_CHARACTER = 1,
         POS_WORD,
         POS_SENTENCE
-} espeak_POSITION_TYPE;
+   } espeak_POSITION_TYPE;
 
 =head2 espeak_AUDIO_OUTPUT
 
-typedef enum {
+   typedef enum {
         /* PLAYBACK mode: plays the audio data, supplies events to the calling program*/
         AUDIO_OUTPUT_PLAYBACK,
 
@@ -459,44 +431,44 @@ typedef enum {
         /* Synchronous playback */
         AUDIO_OUTPUT_SYNCH_PLAYBACK
 
-} espeak_AUDIO_OUTPUT;
+   } espeak_AUDIO_OUTPUT;
 
 =head2 espeak_ERROR
 
-typedef enum {
+   typedef enum {
         EE_OK=0,
         EE_INTERNAL_ERROR=-1,
         EE_BUFFER_FULL=1,
         EE_NOT_FOUND=2
-} espeak_ERROR;
+   } espeak_ERROR;
 
 =head2 espeak_PARAMETER
 
-typedef enum {
-  espeakSILENCE=0, /* internal use */
-  espeakRATE,
-  espeakVOLUME,
-  espeakPITCH,
-  espeakRANGE,
-  espeakPUNCTUATION,
-  espeakCAPITALS,
-  espeakEMPHASIS,   /* internal use */
-  espeakLINELENGTH, /* internal use */
-  espeakVOICETYPE,  // internal, 1=mbrola
-  N_SPEECH_PARAM    /* last enum */
-} espeak_PARAMETER;
+   typedef enum {
+        espeakSILENCE=0, /* internal use */
+        espeakRATE,
+        espeakVOLUME,
+        espeakPITCH,
+        espeakRANGE,
+        espeakPUNCTUATION,
+        espeakCAPITALS,
+        espeakEMPHASIS,   /* internal use */
+        espeakLINELENGTH, /* internal use */
+        espeakVOICETYPE,  // internal, 1=mbrola
+        N_SPEECH_PARAM    /* last enum */
+   } espeak_PARAMETER;
 
 =head2 espeak_PUNCT_TYPE
 
-typedef enum {
-  espeakPUNCT_NONE=0,
-  espeakPUNCT_ALL=1,
-  espeakPUNCT_SOME=2
-} espeak_PUNCT_TYPE;
+   typedef enum {
+        espeakPUNCT_NONE=0,
+        espeakPUNCT_ALL=1,
+        espeakPUNCT_SOME=2
+   } espeak_PUNCT_TYPE;
 
 =head2 espeak_VOICE
 
-typedef struct {
+   typedef struct {
         char *name;            // a given name for this voice. UTF8 string.
         char *languages;       // list of pairs of (byte) priority + (string) language (and dialect qualifier)
         char *identifier;      // the filename for this voice within espeak-data/voices
@@ -506,28 +478,19 @@ typedef struct {
         unsigned char xx1;     // for internal use 
         int score;       // for internal use
         void *spare;     // for internal use
-} espeak_VOICE;
+   } espeak_VOICE;
 
-/* Note: The espeak_VOICE structure is used for two purposes:
-  1.  To return the details of the available voices.
-  2.  As a parameter to  espeak_SetVoiceByProperties() in order to specify selection criteria.
+    Note: The espeak_VOICE structure is used for two purposes:
+   1. To return the details of the available voices.
+   2. As a parameter to  espeak_SetVoiceByProperties() in order to specify selection criteria.
 
-   In (1), the "languages" field consists of a list of (UTF8) language names for which this voice
-   may be used, each language name in the list is terminated by a zero byte and is also preceded by
-   a single byte which gives a "priority" number.  The list of languages is terminated by an
-   additional zero byte.
+   In (1), the "languages" field consists of a list of (UTF8) language names for which this voice may be used, each language name in the list is terminated by a zero byte and is also preceded by a single byte which gives a "priority" number.  The list of languages is terminated by an additional zero byte.
 
-   A language name consists of a language code, optionally followed by one or more qualifier (dialect)
-   names separated by hyphens (eg. "en-uk").  A voice might, for example, have languages "en-uk" and
-   "en".  Even without "en" listed, voice would still be selected for the "en" language (because
-   "en-uk" is related) but at a lower priority.
+   A language name consists of a language code, optionally followed by one or more qualifier (dialect) names separated by hyphens (eg. "en-uk").  A voice might, for example, have languages "en-uk" and "en".  Even without "en" listed, voice would still be selected for the "en" language (because "en-uk" is related) but at a lower priority.
 
-   The priority byte indicates how the voice is preferred for the language. A low number indicates a
-   more preferred voice, a higher number indicates a less preferred voice.
+   The priority byte indicates how the voice is preferred for the language. A low number indicates a more preferred voice, a higher number indicates a less preferred voice.
 
-   In (2), the "languages" field consists simply of a single (UTF8) language name, with no preceding
-   priority byte.
-*/
+   In (2), the "languages" field consists simply of a single (UTF8) language name, with no preceding priority byte.
 
 =head1 EXAMPLE
 
