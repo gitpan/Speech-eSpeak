@@ -14,7 +14,7 @@ To install this module type the following:
 
 If ERROR occurs from the above operation, read below:
 
-Make sure you has make symbolic links of eSpeak first. The release of eSpeak from SourceForge is a stand alone version. You should do the following command first:
+Make sure you have made symbolic links of eSpeak first. The release of eSpeak from SourceForge is a stand alone version. You should do the following command first:
 
 #sudo ln -s /{path_to_espeak}/shared_library/libespeak.so.{version} /usr/lib/libespeak.so
 #sudo ln -s /{path_to_espeak}/shared_library/libespeak.so.{version} /usr/lib/libespeak.so.1

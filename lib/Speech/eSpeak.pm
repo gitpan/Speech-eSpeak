@@ -114,7 +114,7 @@ our @EXPORT = qw(
 	espeakVOLUME
 );
 
-our $VERSION = '0.11';
+our $VERSION = '0.12';
 
 sub AUTOLOAD {
     # This AUTOLOAD is used to 'autoload' constants from the constant()
@@ -217,194 +217,388 @@ Not implemented yet.
 
 =head2 espeak_Synth($text, $size, $position, $position_type, $end_position, $flags, $unique_identifier, $user_data)
 
-   Synthesize speech for the specified text.  The speech sound data is passed to the calling program in buffers by means of the callback function specified by espeak_SetSynthCallback(). The command is asynchronous: it is internally buffered and returns as soon as possible. If espeak_Initialize was previously called with AUDIO_OUTPUT_PLAYBACK as argument, the sound data are played by eSpeak.
+Synthesize speech for the specified text.
 
-   text: The text to be spoken, terminated by a zero character. It may be either 8-bit characters, wide characters (wchar_t), or UTF8 encoding.  Which of these is determined by the "flags" parameter.
+$text: The text to be spoken.
 
-   size: Equal to (or greatrer than) the size of the text data, in bytes.  This is used in order to allocate internal storage space for the text.  This value is not used for AUDIO_OUTPUT_SYNCHRONOUS mode.
+$size: Equal to (or greatrer than) the size of the text data, in bytes.  This is used in order to allocate internal storage space for the text.  This value is not used for AUDIO_OUTPUT_SYNCHRONOUS mode. In normal case, $size = length($text) + 1;
 
-   position:  The position in the text where speaking starts. Zero indicates speak from the start of the text.
+$position:  The position in the text where speaking starts. Zero indicates speak from the start of the text.
 
-   position_type:  Determines whether "position" is a number of characters, words, or sentences. SEE L</"espeak_POSITION_TYPE">
+$position_type:  Determines whether "position" is a number of characters, words, or sentences. SEE L</"espeak_POSITION_TYPE">
 
-   end_position:  If set, this gives a character position at which speaking will stop.  A value of zero indicates no end position.
+$end_position:  If set, this gives a character position at which speaking will stop.  A value of zero indicates no end position.
 
-   flags:  These may be OR'd together:
-      Type of character codes, one of:
-         espeakCHARS_UTF8     UTF8 encoding
-         espeakCHARS_8BIT     The 8 bit ISO-8859 character set for the particular language.
-         espeakCHARS_AUTO     8 bit or UTF8  (this is the default)
-         espeakCHARS_WCHAR    Wide characters (wchar_t)
+$flags:  These may be OR'd together:
 
-      espeakSSML   Elements within < > are treated as SSML elements, or if not recognised are ignored.
+Type of character codes, one of:
 
-      espeakPHONEMES  Text within [[ ]] is treated as phonemes codes (in espeak's Hirschenbaum encoding).
+=over 4
 
-      espeakENDPAUSE  If set then a sentence pause is added at the end of the text.  If not set then
-         this pause is suppressed.
+=item
 
-   unique_identifier: message identifier; helpful for identifying later data supplied to the callback.
+espeakCHARS_UTF8     UTF8 encoding
 
-   user_data: pointer which will be passed to the callback function.
+=item
 
-   Return: EE_OK: operation achieved 
-           EE_BUFFER_FULL: the command can not be buffered; you may try after a while to call the function again.
-           EE_INTERNAL_ERROR.
+espeakCHARS_8BIT     The 8 bit ISO-8859 character set for the particular language.
+
+=item
+
+espeakCHARS_AUTO     8 bit or UTF8  (this is the default)
+
+=item
+
+espeakCHARS_WCHAR    Wide characters (wchar_t)
+
+=back
+
+espeakSSML   Elements within < > are treated as SSML elements, or if not recognised are ignored.
+
+espeakPHONEMES  Text within [[ ]] is treated as phonemes codes (in espeak's Hirschenbaum encoding).
+
+espeakENDPAUSE  If set then a sentence pause is added at the end of the text.  If not set then this pause is suppressed.
+
+$unique_identifier: message identifier; helpful for identifying later data supplied to the callback.
+
+$user_data: pointer which will be passed to the callback function.
+
+Return:
+
+=over 4
+
+=item
+
+EE_OK: operation achieved
+
+=item
+
+EE_BUFFER_FULL: the command can not be buffered; you may try after a while to call the function again.
+
+=item
+
+EE_INTERNAL_ERROR.
+
+=back
 
 =head2 espeak_Synth_Mark($text, $size, $index_mark, $end_position, $flags, $unique_identifier, $user_data)
 
-   Synthesize speech for the specified text.  Similar to espeak_Synth() but the start position is specified by the name of a <mark> element in the text.
+Synthesize speech for the specified text. Similar to espeak_Synth() but the start position is specified by the name of a <mark> element in the text.
 
-   index_mark:  The "name" attribute of a <mark> element within the text which specified the point at which synthesis starts.  UTF8 string.
+$index_mark:  The "name" attribute of a <mark> element within the text which specified the point at which synthesis starts.  UTF8 string.
 
-   For the other parameters, see espeak_Synth()
+For the other parameters, see espeak_Synth()
 
-   Return: EE_OK: operation achieved
-           EE_BUFFER_FULL: the command can not be buffered; you may try after a while to call the function again.
-           EE_INTERNAL_ERROR.
+Return:
+
+=over 4
+
+=item
+
+EE_OK: operation achieved
+
+=item
+
+EE_BUFFER_FULL: the command can not be buffered; you may try after a while to call the function again.
+
+=item
+
+EE_INTERNAL_ERROR.
+
+=back
 
 =head2 espeak_Key($key_name)
 
-   Speak the name of a keyboard key. Currently this just speaks the "key_name" as given
+Speak the name of a keyboard key. Currently this just speaks the "key_name" as given
 
-   Return: EE_OK: operation achieved
-           EE_BUFFER_FULL: the command can not be buffered; you may try after a while to call the function again.
-           EE_INTERNAL_ERROR.
+Return:
+
+=over 4
+
+=item
+
+EE_OK: operation achieved
+
+=item
+
+EE_BUFFER_FULL: the command can not be buffered; you may try after a while to call the function again.
+
+=item
+
+EE_INTERNAL_ERROR.
+
+=back
 
 =head2 espeak_Char($character)
 
-   Speak the name of the given character
+Speak the name of the given character
 
-   Return: EE_OK: operation achieved
-           EE_BUFFER_FULL: the command can not be buffered; you may try after a while to call the function again.
-           EE_INTERNAL_ERROR.
+Return:
+
+=over 4
+
+=item
+
+EE_OK: operation achieved
+
+=item
+
+EE_BUFFER_FULL: the command can not be buffered; you may try after a while to call the function again.
+
+=item
+
+EE_INTERNAL_ERROR.
+
+=back
 
 =head2 espeak_SetParameter($parameter, $value, $relative)
 
-   Sets the value of the specified parameter.
-   relative=0   Sets the absolute value of the parameter.
-   relative=1   Sets a relative value of the parameter.
+Sets the value of the specified parameter.
 
-   parameter:
-      espeakRATE:    speaking speed in word per minute.
+relative=0   Sets the absolute value of the parameter.
 
-      espeakVOLUME:  volume in range 0-100    0=silence
+relative=1   Sets a relative value of the parameter.
 
-      espeakPITCH:   base pitch, range 0-100.  50=normal
+parameter:
 
-      espeakRANGE:   pitch range, range 0-100. 0-monotone, 50=normal
+=over 4
 
-      espeakPUNCTUATION:  which punctuation characters to announce:
-         value in espeak_PUNCT_TYPE (none, all, some), see espeak_GetParameter() to specify which characters are announced.
+=item
 
-      espeakCAPITALS: announce capital letters by:
-         0=none,
-         1=sound icon,
-         2=spelling,
-         3 or higher, by raising pitch.  This values gives the amount in Hz by which the pitch
-            of a word raised to indicate it has a capital letter.
+espeakRATE:    speaking speed in word per minute.
 
-   Return: EE_OK: operation achieved
-           EE_BUFFER_FULL: the command can not be buffered; you may try after a while to call the function again.
-           EE_INTERNAL_ERROR.
+=item
 
-=head2 espeak_GetParameter($parameter, current)
+espeakVOLUME:  volume in range 0-100    0=silence
 
-   current=0  Returns the default value of the specified parameter.
-   current=1  Returns the current value of the specified parameter, as set by SetParameter()
+=item
+
+espeakPITCH:   base pitch, range 0-100.  50=normal
+
+=item
+
+espeakRANGE:   pitch range, range 0-100. 0-monotone, 50=normal
+
+=item
+
+espeakPUNCTUATION:  which punctuation characters to announce: value in espeak_PUNCT_TYPE (none, all, some), see espeak_GetParameter() to specify which characters are announced.
+
+=item
+
+espeakCAPITALS: announce capital letters by:
+
+0=none,
+
+1=sound icon,
+
+2=spelling,
+
+3 or higher, by raising pitch.  This values gives the amount in Hz by which the pitch of a word raised to indicate it has a capital letter.
+
+=back
+
+Return:
+
+=over 4
+
+=item
+
+EE_OK: operation achieved
+
+=item
+
+EE_BUFFER_FULL: the command can not be buffered; you may try after a while to call the function again.
+
+=item
+
+EE_INTERNAL_ERROR.
+
+=back
+
+=head2 espeak_GetParameter($parameter, $current)
+
+$current=0  Returns the default value of the specified parameter.
+
+$current=1  Returns the current value of the specified parameter, as set by SetParameter()
+
+Example:
+
+  print 'rate: ', espeak_GetParameter(espeakRATE, 1), "\n";
+  print 'volume: ', espeak_GetParameter(espeakVOLUME, 1), "\n";
+  print 'pitch: ', espeak_GetParameter(espeakPITCH, 1), "\n";
+  print 'range: ', espeak_GetParameter(espeakRANGE, 1), "\n";
+  print 'punctuation: ', espeak_GetParameter(espeakPUNCTUATION, 1), "\n";
+  print 'capitals: ', espeak_GetParameter(espeakCAPITALS, 1), "\n";
+  espeak_SetParameter(espeakPITCH, 100, 0);
+  espeak_SetParameter(espeakRANGE, 100, 0);
 
 =head2 espeak_SetPunctuationList($punclist)
 
-   Specified a list of punctuation characters whose names are to be spoken when the
-   value of the Punctuation parameter is set to "some".
+Specified a list of punctuation characters whose names are to be spoken when the value of the Punctuation parameter is set to "some".
 
-   punctlist:  A list of character codes, terminated by a zero character.
+$punctlist:  A list of character codes, terminated by a zero character.
 
-   Return: EE_OK: operation achieved 
-           EE_BUFFER_FULL: the command can not be buffered; you may try after a while to call the function again.
-           EE_INTERNAL_ERROR.
+Return:
 
+=over 4
+
+=item
+
+EE_OK: operation achieved
+
+=item
+
+EE_BUFFER_FULL: the command can not be buffered; you may try after a while to call the function again.
+
+=item
+
+EE_INTERNAL_ERROR.
+
+=back
 
 =head2 espeak_SetPhonemeTrace($value, $stream)
 
-   Controls the output of phoneme symbols for the text
-   value=0  No phoneme output (default)
-   value=1  Output the translated phoneme symbols for the text
-   value=2  as (1), but also output a trace of how the translation was done (matching rules and list entries)
+Controls the output of phoneme symbols for the text
 
-   stream   output stream for the phoneme symbols (and trace).  If stream=NULL then it uses stdout.
+$value=0  No phoneme output (default)
+
+$value=1  Output the translated phoneme symbols for the text
+
+$value=2  as (1), but also output a trace of how the translation was done (matching rules and list entries)
+
+$stream   output stream for the phoneme symbols (and trace).  If stream=NULL then it uses stdout.
 
 =head2 espeak_CompileDictionary($path, $log)
 
-   Compile pronunciation dictionary for a language which corresponds to the currently selected voice.  The required voice should be selected before calling this function.
+Compile pronunciation dictionary for a language which corresponds to the currently selected voice.  The required voice should be selected before calling this function.
 
-   path:  The directory which contains the language's '_rules' and '_list' files.
-          'path' should end with a path separator character ('/').
-   log:   Stream for error reports and statistics information. If log=NULL then stderr will be used.
+$path:  The directory which contains the language's '_rules' and '_list' files. 'path' should end with a path separator character ('/').
+
+$log:   Stream for error reports and statistics information. If log=NULL then stderr will be used.
 
 =head2 espeak_ListVoices($voice_spec)
 
-   Reads the voice files from espeak-data/voices and creates an array of espeak_VOICE pointers. The list is terminated by a NULL pointer
+Reads the voice files from espeak-data/voices and creates an array of espeak_VOICE pointers. The list is terminated by a NULL pointer
 
-   If voice_spec is NULL then all voices are listed.
-   If voice spec is give, then only the voices which are compatible with the voice_spec are listed, and they are listed in preference order.
+If voice_spec is NULL then all voices are listed.
+
+If voice spec is give, then only the voices which are compatible with the voice_spec are listed, and they are listed in preference order.
 
 =head2 espeak_SetVoiceByName($name)
 
-   Searches for a voice with a matching "name" field.  Language is not considered. "name" is a UTF8 string.
+Searches for a voice with a matching "name" field.  Language is not considered. "name" is a UTF8 string.
 
-   Return: EE_OK: operation achieved
-           EE_BUFFER_FULL: the command can not be buffered; you may try after a while to call the function again.
-           EE_INTERNAL_ERROR.
+Return:
+
+=over 4
+
+=item
+
+EE_OK: operation achieved
+
+=item
+
+EE_BUFFER_FULL: the command can not be buffered; you may try after a while to call the function again.
+
+=item
+
+EE_INTERNAL_ERROR.
+
+=back
+
+Example:
+
+  use Speech::eSpeak ':all';
+  espeak_Initialize(AUDIO_OUTPUT_PLAYBACK, 0, '');
+  espeak_SetVoiceByName("de");
+  my $synth_flags = espeakCHARS_AUTO | espeakPHONEMES | espeakENDPAUSE;
+  my $text = 'Sprechen Sie Deutsch?';
+  espeak_Synth($text, length($text) + 1, 0, POS_CHARACTER, 0, $synth_flags, 0, 0);
+  espeak_Synchronize();
 
 =head2 espeak_SetVoiceByProperties($voice_spec)
 
-   An espeak_VOICE structure is used to pass criteria to select a voice.  Any of the following fields may be set:
-
-   name     NULL, or a voice name
-
-   languages  NULL, or a single language string (with optional dialect), eg. "en-uk", or "en"
-
-   gender   0=not specified, 1=male, 2=female
-
-   age      0=not specified, or an age in years
-
-   variant  After a list of candidates is produced, scored and sorted, "variant" is used to index that list and choose a voice.
-            variant=0 takes the top voice (i.e. best match). variant=1 takes the next voice, etc
+Not implemented yet.
 
 =head2 espeak_GetCurrentVoice()
 
-   Returns the espeak_VOICE data for the currently selected voice.
-   This is not affected by temporary voice changes caused by SSML elements such as <voice> and <s>
+Returns the espeak_VOICE data for the currently selected voice.
+
+This is not affected by temporary voice changes caused by SSML elements such as <voice> and <s>
+
+Example:
+
+  my $voice = espeak_GetCurrentVoice();
+  print 'name: ', $voice->name, "\n";
+  print 'languages: ', $voice->languages, "\n";
+  print 'identifier: ', $voice->identifier, "\n";
+  print 'gender: ', $voice->gender, "\n";
+  print 'age: ', $voice->age, "\n";
+  print 'variant: ', $voice->variant, "\n";
 
 =head2 espeak_Cancel()
 
-   Stop immediately synthesis and audio output of the current text. When this function returns, the audio output is fully stopped and the synthesizer is ready to synthesize a new message.
+Stop immediately synthesis and audio output of the current text. When this function returns, the audio output is fully stopped and the synthesizer is ready to synthesize a new message.
 
-   Return: EE_OK: operation achieved
-           EE_INTERNAL_ERROR.
+Return:
+
+=over 4
+
+=item
+
+EE_OK: operation achieved
+
+=item
+
+EE_INTERNAL_ERROR.
+
+=back
 
 =head2 epseak_IsPlaying()
 
-   Returns 1 if audio is played, 0 otherwise.
-
+Returns 1 if audio is played, 0 otherwise.
 
 =head2 espeak_Synchronize()
 
-   This function returns when all data have been spoken.
-   Return: EE_OK: operation achieved
-           EE_INTERNAL_ERROR.
+This function returns when all data have been spoken.
+
+Return:
+
+=over 4
+
+=item
+
+EE_OK: operation achieved
+
+=item
+
+EE_INTERNAL_ERROR.
+
+=back
 
 =head2 espeak_Terminate()
 
-   last function to be called.
-   Return: EE_OK: operation achieved
-           EE_INTERNAL_ERROR.
+The last function to be called.
+
+Return:
+
+=over 4
+
+=item
+
+EE_OK: operation achieved
+
+=item
+
+EE_INTERNAL_ERROR.
+
+=back
 
 =head2 espeak_Info()
 
-   Returns the version number string.
-   The parameter is for future use, and should be set to NULL
+Returns the version number string.
+
+The parameter is for future use, and should be set to NULL.
 
 =head1 TYPES
 
