@@ -114,7 +114,7 @@ our @EXPORT = qw(
 	espeakVOLUME
 );
 
-our $VERSION = '0.12';
+our $VERSION = '0.13';
 
 sub AUTOLOAD {
     # This AUTOLOAD is used to 'autoload' constants from the constant()
@@ -674,17 +674,9 @@ The parameter is for future use, and should be set to NULL.
         void *spare;     // for internal use
    } espeak_VOICE;
 
-    Note: The espeak_VOICE structure is used for two purposes:
+   Note: The espeak_VOICE structure is used for two purposes:
    1. To return the details of the available voices.
    2. As a parameter to  espeak_SetVoiceByProperties() in order to specify selection criteria.
-
-   In (1), the "languages" field consists of a list of (UTF8) language names for which this voice may be used, each language name in the list is terminated by a zero byte and is also preceded by a single byte which gives a "priority" number.  The list of languages is terminated by an additional zero byte.
-
-   A language name consists of a language code, optionally followed by one or more qualifier (dialect) names separated by hyphens (eg. "en-uk").  A voice might, for example, have languages "en-uk" and "en".  Even without "en" listed, voice would still be selected for the "en" language (because "en-uk" is related) but at a lower priority.
-
-   The priority byte indicates how the voice is preferred for the language. A low number indicates a more preferred voice, a higher number indicates a less preferred voice.
-
-   In (2), the "languages" field consists simply of a single (UTF8) language name, with no preceding priority byte.
 
 =head1 EXAMPLE
 
@@ -738,7 +730,7 @@ eSpeak Documents, speak_lib.h, L<http://espeak.sourceforge.net>, L<eGuideDog::Fe
 
 =head1 AUTHOR
 
-Cameron Wong, E<lt>hgn823-eguidedog at yahoo.com.cnE<gt>, L<http://e-guidedog.sourceforge.net>
+Cameron Wong, E<lt>hgn823-eguidedog002 at yahoo.com.cnE<gt>, L<http://e-guidedog.sourceforge.net>
 
 =head1 SUPPORT
 

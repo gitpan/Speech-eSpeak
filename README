@@ -24,6 +24,10 @@ Make sure you have made symbolic links of eSpeak first. The release of eSpeak fr
 
 You should substitute {path_to_espeak} and {version} according to your situation.
 
+If you are using a 64bit system, you may need to make a 64bit libespeak.so from source yourself. Here is an existed one from Ubuntu which I have never tried myself:
+
+http://packages.ubuntu.com/gutsy/libs/libespeak1
+
 DEPENDENCIES
 
 This module requires these other modules and libraries:
