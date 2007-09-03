@@ -390,6 +390,20 @@ const char *
 espeak_Info(ptr)
 		void *		ptr
 
+void
+set_male_voice()
+	CODE:
+		espeak_VOICE *spec = espeak_GetCurrentVoice();
+		spec->gender = 1;
+		espeak_SetVoiceByProperties(spec);
+
+void
+set_female_voice()
+	CODE:
+		espeak_VOICE *spec = espeak_GetCurrentVoice();
+		spec->gender = 2;
+		espeak_SetVoiceByProperties(spec);
+
 MODULE = Speech::eSpeak  PACKAGE = Speech::eSpeak::VoicePtr  PREFIX = voice_
 
 void

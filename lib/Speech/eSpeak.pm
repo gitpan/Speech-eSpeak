@@ -71,6 +71,8 @@ our %EXPORT_TAGS = ( 'all' => [ qw(
 				   espeak_Synchronize
 				   espeak_Terminate
 				   espeak_Info
+	set_male_voice
+	set_female_voice
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
@@ -114,7 +116,7 @@ our @EXPORT = qw(
 	espeakVOLUME
 );
 
-our $VERSION = '0.13';
+our $VERSION = '0.14';
 
 sub AUTOLOAD {
     # This AUTOLOAD is used to 'autoload' constants from the constant()
@@ -678,7 +680,7 @@ The parameter is for future use, and should be set to NULL.
    1. To return the details of the available voices.
    2. As a parameter to  espeak_SetVoiceByProperties() in order to specify selection criteria.
 
-=head1 EXAMPLE
+=head1 EXAMPLE 1
 
   use strict;
   use Speech::eSpeak ':all';
@@ -724,6 +726,25 @@ The parameter is for future use, and should be set to NULL.
 
   espeak_Terminate();
 
+=head1 EXAMPLE 2
+
+  use strict;
+  use Speech::eSpeak ':all';
+  espeak_Initialize(AUDIO_OUTPUT_PLAYBACK, 0, '');
+  my $synth_flags = espeakCHARS_AUTO | espeakPHONEMES | espeakENDPAUSE;
+  my $s = 'Hello Betty';
+  espeak_Synth($s, length($s) + 1, 0, POS_CHARACTER, 0, $synth_flags, 0, 0);
+  set_female_voice();
+  $s = 'Hello Mike';
+  espeak_Synth($s, length($s) + 1, 0, POS_CHARACTER, 0, $synth_flags, 0, 0);
+  set_male_voice();
+  $s = 'How are you?';
+  espeak_Synth($s, length($s) + 1, 0, POS_CHARACTER, 0, $synth_flags, 0, 0);
+  set_female_voice();
+  $s = 'Fine. Thank you!';
+  espeak_Synth($s, length($s) + 1, 0, POS_CHARACTER, 0, $synth_flags, 0, 0);
+  espeak_Synchronize();
+
 =head1 SEE ALSO
 
 eSpeak Documents, speak_lib.h, L<http://espeak.sourceforge.net>, L<eGuideDog::Festival>
@@ -740,23 +761,7 @@ You can find documentation for this module with the perldoc command.
 
 You can also look for information at:
 
-=over 4
-
-=item * AnnoCPAN: Annotated CPAN documentation
-
-L<http://annocpan.org/dist/eGuideDog-Festival>
-
-=item * CPAN Ratings
-
-L<http://cpanratings.perl.org/d/eGuideDog-Festival>
-
-=item * RT: CPAN's request tracker
-
-L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=eGuideDog-Festival>
-
-=item * Search CPAN
-
-L<http://search.cpan.org/dist/eGuideDog-Festival>
+L<http://search.cpan.org/dist/Speech-eSpeak>
 
 =head1 ACKNOWLEDGEMENT
 
