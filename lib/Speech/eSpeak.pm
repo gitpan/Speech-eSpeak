@@ -36,6 +36,13 @@ our %EXPORT_TAGS = ( 'all' => [ qw(
 	espeakEMPHASIS
 	espeakENDPAUSE
 	espeakEVENT_LIST_TERMINATED
+	espeakEVENT_WORD
+	espeakEVENT_SENTENCE
+	espeakEVENT_MARK
+	espeakEVENT_PLAY
+	espeakEVENT_END
+	espeakEVENT_MSG_TERMINATED
+	espeakEVENT_PHONEME
 	espeakKEEP_NAMEDATA
 	espeakLINELENGTH
 	espeakPHONEMES
@@ -101,6 +108,13 @@ our @EXPORT = qw(
 	espeakEMPHASIS
 	espeakENDPAUSE
 	espeakEVENT_LIST_TERMINATED
+        espeakEVENT_WORD
+        espeakEVENT_SENTENCE
+        espeakEVENT_MARK
+        espeakEVENT_PLAY
+        espeakEVENT_END
+        espeakEVENT_MSG_TERMINATED
+        espeakEVENT_PHONEME
 	espeakKEEP_NAMEDATA
 	espeakLINELENGTH
 	espeakPHONEMES
@@ -116,7 +130,7 @@ our @EXPORT = qw(
 	espeakVOLUME
 );
 
-our $VERSION = '0.14';
+our $VERSION = '0.2';
 
 sub AUTOLOAD {
     # This AUTOLOAD is used to 'autoload' constants from the constant()
@@ -193,6 +207,13 @@ None by default.
   espeakEMPHASIS
   espeakENDPAUSE
   espeakEVENT_LIST_TERMINATED
+  espeakEVENT_WORD
+  espeakEVENT_SENTENCE
+  espeakEVENT_MARK
+  espeakEVENT_PLAY
+  espeakEVENT_END
+  espeakEVENT_MSG_TERMINATED
+  espeakEVENT_PHONEME
   espeakKEEP_NAMEDATA
   espeakLINELENGTH
   espeakPHONEMES
@@ -486,9 +507,19 @@ If voice_spec is NULL then all voices are listed.
 
 If voice spec is give, then only the voices which are compatible with the voice_spec are listed, and they are listed in preference order.
 
+Example:
+  # list all voices
+  my $voices = espeak_ListVoices('');
+  foreach my $voice_spec (@{$voices}) {
+    foreach (keys %{$voice_spec}) {
+      print $voice_spec->{$_}, ' ';
+    }
+    print "\n";
+  }
+
 =head2 espeak_SetVoiceByName($name)
 
-Searches for a voice with a matching "name" field.  Language is not considered. "name" is a UTF8 string.
+Searches for a voice with a matching "name" field.  Language is not considered. "name" is a UTF8 string. For example, "en" for English, "de" for German, "zhy" for Cantonese. It could be added a variant too. For example, "fr+f2" for female voice variant of French, "it+m4" for male voice variant of Italian.
 
 Return:
 
@@ -511,7 +542,7 @@ EE_INTERNAL_ERROR.
 Example:
 
   use Speech::eSpeak ':all';
-  espeak_Initialize(AUDIO_OUTPUT_PLAYBACK, 0, '');
+  espeak_Initialize(AUDIO_OUTPUT_PLAYBACK, 0, '', 0);
   espeak_SetVoiceByName("de");
   my $synth_flags = espeakCHARS_AUTO | espeakPHONEMES | espeakENDPAUSE;
   my $text = 'Sprechen Sie Deutsch?';
@@ -531,12 +562,12 @@ This is not affected by temporary voice changes caused by SSML elements such as 
 Example:
 
   my $voice = espeak_GetCurrentVoice();
-  print 'name: ', $voice->name, "\n";
-  print 'languages: ', $voice->languages, "\n";
-  print 'identifier: ', $voice->identifier, "\n";
-  print 'gender: ', $voice->gender, "\n";
-  print 'age: ', $voice->age, "\n";
-  print 'variant: ', $voice->variant, "\n";
+  print 'name: ', $voice->{name}, "\n";
+  print 'languages: ', $voice->{languages}, "\n";
+  print 'identifier: ', $voice->{identifier}, "\n";
+  print 'gender: ', $voice->{gender}, "\n";
+  print 'age: ', $voice->{age}, "\n";
+  print 'variant: ', $voice->{variant}, "\n";
 
 =head2 espeak_Cancel()
 
@@ -685,7 +716,7 @@ The parameter is for future use, and should be set to NULL.
   use strict;
   use Speech::eSpeak ':all';
 
-  espeak_Initialize(AUDIO_OUTPUT_PLAYBACK, 0, '');
+  espeak_Initialize(AUDIO_OUTPUT_PLAYBACK, 0, '', 0);
 
   my $synth_flags = espeakCHARS_AUTO | espeakPHONEMES | espeakENDPAUSE;
   espeak_Synth('hello world', 12, 0, POS_CHARACTER, 0, $synth_flags, 0, 0);
@@ -701,14 +732,6 @@ The parameter is for future use, and should be set to NULL.
   print 'range: ', espeak_GetParameter(espeakRANGE, 1), "\n";
   print 'punctuation: ', espeak_GetParameter(espeakPUNCTUATION, 1), "\n";
   print 'capitals: ', espeak_GetParameter(espeakCAPITALS, 1), "\n";
-
-  my $voice = espeak_GetCurrentVoice();
-  print 'name: ', $voice->name, "\n";
-  print 'languages: ', $voice->languages, "\n";
-  print 'identifier: ', $voice->identifier, "\n";
-  print 'gender: ', $voice->gender, "\n";
-  print 'age: ', $voice->age, "\n";
-  print 'variant: ', $voice->variant, "\n";
 
   espeak_SetParameter(espeakPITCH, 100, 0);
   espeak_SetParameter(espeakRANGE, 100, 0);
@@ -730,18 +753,33 @@ The parameter is for future use, and should be set to NULL.
 
   use strict;
   use Speech::eSpeak ':all';
-  espeak_Initialize(AUDIO_OUTPUT_PLAYBACK, 0, '');
+  espeak_Initialize(AUDIO_OUTPUT_PLAYBACK, 0, '', 0);
   my $synth_flags = espeakCHARS_AUTO | espeakPHONEMES | espeakENDPAUSE;
-  my $s = 'Hello Betty';
+  my $s = 'Hello Debbie';
   espeak_Synth($s, length($s) + 1, 0, POS_CHARACTER, 0, $synth_flags, 0, 0);
-  set_female_voice();
-  $s = 'Hello Mike';
+  # set a female variant voice of English.
+  # We can specified the variant from 'm1' to 'm4', 'f1' to 'f4', 'croak' and 'wisper'.
+  # There maybe new variants in future. Just refer to directory espeak-data/voices/!v/
+  espeak_SetVoiceByName(en+f2);
+  $s = 'Hello Cameron';
   espeak_Synth($s, length($s) + 1, 0, POS_CHARACTER, 0, $synth_flags, 0, 0);
-  set_male_voice();
-  $s = 'How are you?';
   espeak_Synth($s, length($s) + 1, 0, POS_CHARACTER, 0, $synth_flags, 0, 0);
-  set_female_voice();
-  $s = 'Fine. Thank you!';
+  espeak_Synchronize();
+
+=head1 EXAMPLE 3
+
+  use strict;
+  use Speech::eSpeak ':all';
+  espeak_Initialize(AUDIO_OUTPUT_PLAYBACK, 0, '', 0);
+  my $synth_flags = espeakCHARS_AUTO | espeakPHONEMES | espeakENDPAUSE;
+  espeak_SetVoiceByName("zhy");
+  my $s = 'ä½ å¥½';
+  espeak_Synth($s, length($s) + 1, 0, POS_CHARACTER, 0, $synth_flags, 0, 0);
+  my $spec = {name => "german",
+	      gender => 2,
+             };
+  espeak_SetVoiceByProperties($spec);
+  $s = 'Guten Tag!';
   espeak_Synth($s, length($s) + 1, 0, POS_CHARACTER, 0, $synth_flags, 0, 0);
   espeak_Synchronize();
 
@@ -751,13 +789,13 @@ eSpeak Documents, speak_lib.h, L<http://espeak.sourceforge.net>, L<eGuideDog::Fe
 
 =head1 AUTHOR
 
-Cameron Wong, E<lt>hgn823-eguidedog002 at yahoo.com.cnE<gt>, L<http://e-guidedog.sourceforge.net>
+Cameron Wong, E<lt>hgn823-perl at yahoo.com.cnE<gt>, L<http://e-guidedog.sourceforge.net>
 
 =head1 SUPPORT
 
 You can find documentation for this module with the perldoc command.
 
-    perldoc eGuideDog::Festival
+    perldoc Speech::eSpeak
 
 You can also look for information at:
 

@@ -5,12 +5,12 @@
 #include "ppport.h"
 
 #include "speak_lib.h"
+#include <stdlib.h>
 
 #include "const-c.inc"
 
 #include <string.h>
 
-typedef espeak_VOICE Speech_eSpeak_Voice;
 typedef espeak_EVENT Speech_eSpeak_Event;
 
 static SV * perl_synthcallback = (SV*)NULL;
@@ -92,6 +92,13 @@ espeakEVENT_MSG_TERMINATED()
 		RETVAL
 
 IV
+espeakEVENT_PHONEME()
+	CODE:
+		RETVAL = espeakEVENT_PHONEME;
+	OUTPUT:
+		RETVAL
+
+IV
 POS_CHARACTER()
 	CODE:
 		RETVAL = POS_CHARACTER;
@@ -169,10 +176,11 @@ EE_NOT_FOUND()
 		RETVAL
 
 int
-espeak_Initialize(output, buflength, path)
+espeak_Initialize(output, buflength, path, options)
 		IV		output
 		int		buflength
 		const char *	path
+		int		options
 
 void
 espeak_SetSynthCallback(SynthCallback)
@@ -340,28 +348,76 @@ espeak_CompileDictionary(path, log)
 		const char *	path
 		FILE *		log
 
-const espeak_VOICE **
-espeak_ListVoices(spec)
-		SV *		spec
-	PPCODE:
+SV *
+espeak_ListVoices(voice_spec)
+		SV *		voice_spec
+	INIT:
+		AV * results;
+		espeak_VOICE *voice = (espeak_VOICE *) malloc(sizeof(espeak_VOICE));
+		STRLEN len;
 		const espeak_VOICE ** voices;
-		if (sv_derived_from(spec, "Speech::eSpeak::VoicePtr")) {
-			IV tmp = SvIV((SV*)SvRV(spec));
-			Speech_eSpeak_Voice * voice_spec = INT2PTR(Speech_eSpeak_Voice *, tmp);
-			voices = espeak_ListVoices(voice_spec);
-			
-		} else {
+		results = (AV *)sv_2mortal((SV *)newAV());
+	CODE:
+		if ((!SvROK(voice_spec))
+		    || (SvTYPE(SvRV(voice_spec)) != SVt_PVHV)) {
 			voices = espeak_ListVoices(NULL);
+		} else {
+			HV * spec = (HV *) SvRV(voice_spec);
+			if (hv_exists(spec, "name", 4)) {
+			voice->name = SvPV(newSVsv(*hv_fetch(spec, "name", 4, 1)
+), len);
+			} else {
+				voice->name = "";
+			}
+
+	                if (hv_exists(spec, "languages", 9)) {
+				voice->languages = SvPV(newSVsv(*hv_fetch(spec, "languages", 9, 1)), len);
+                	} else {
+                        	voice->languages = "";
+	                } 
+
+        	        if (hv_exists(spec, "identifier", 10)) {        
+				voice->identifier = SvPV(newSVsv(*hv_fetch(spec, "identifier", 10, 1)), len);
+	                } else {
+        	                voice->identifier = "";
+                	}
+
+	                if (hv_exists(spec, "gender", 6)) {
+				voice->gender = SvIV(newSVsv(*hv_fetch(spec, "gender", 6, 1)));
+                	} else {
+	                        voice->gender = 0;
+        	        }
+
+	                if (hv_exists(spec, "age", 3)) {
+				voice->age = SvIV(newSVsv(*hv_fetch(spec, "age", 3, 1)));
+                	} else {
+                        	voice->age = 0;
+	                }
+
+        	        if (hv_exists(spec, "variant", 7)) {
+				voice->variant = SvIV(newSVsv(*hv_fetch(spec, "variant", 7, 1)));
+	                } else {
+        	                voice->variant = 0;
+                	}
+			voices = espeak_ListVoices(voice);
 		}
-	
-		AV* vs = newAV();
+
 		int i = 0;
 		while (voices[i]) {
-			SV* vi = sv_newmortal();
-			sv_setref_pv(vi, "Speech::eSpeak::VoicePtr", (void*)voices[i]);
-			XPUSHs(vi);
+			HV * vi = (HV *)sv_2mortal((SV *)newHV());
+			hv_store(vi, "name", 4, newSVpv(voices[i]->name, 0), 0);
+			hv_store(vi, "languages", 9, newSVpv(voices[i]->languages, 0), 0);
+			hv_store(vi, "identifier", 10, newSVpv(voices[i]->identifier, 0), 0);
+			hv_store(vi, "age", 3, newSViv(voices[i]->age), 0);
+			hv_store(vi, "gender", 6, newSViv(voices[i]->gender), 0);
+			hv_store(vi, "variant", 7, newSViv(voices[i]->variant), 0);
+
+			av_push(results, newRV((SV *)vi));
 			i++;
 		}
+		RETVAL = newRV((SV *)results);
+	OUTPUT:
+		RETVAL
 
 IV
 espeak_SetVoiceByName(name)
@@ -369,10 +425,73 @@ espeak_SetVoiceByName(name)
 
 IV
 espeak_SetVoiceByProperties(voice_spec)
-		Speech_eSpeak_Voice *		voice_spec
+		SV *		voice_spec
+	INIT:
+		espeak_VOICE *voice = (espeak_VOICE *) malloc(sizeof(espeak_VOICE));
+		if ((!SvROK(voice_spec))
+		    || (SvTYPE(SvRV(voice_spec)) != SVt_PVHV)) {
+			XSRETURN_UNDEF;
+		}
+		HV * spec = (HV *) SvRV(voice_spec);
+		STRLEN len;
+	CODE:
+		if (hv_exists(spec, "name", 4)) {
+			voice->name = SvPV(newSVsv(*hv_fetch(spec, "name", 4, 1)), len);
+		} else {
+			voice->name = "";
+		}
 
-Speech_eSpeak_Voice *
+		if (hv_exists(spec, "languages", 9)) {
+			voice->languages = SvPV(newSVsv(*hv_fetch(spec, "languages", 9, 1)), len);
+		} else {
+			voice->languages = "";
+		} 
+
+		if (hv_exists(spec, "identifier", 10)) {	
+			voice->identifier = SvPV(newSVsv(*hv_fetch(spec, "identifier", 10, 1)), len);
+		} else {
+			voice->identifier = "";
+		}
+
+		if (hv_exists(spec, "gender", 6)) {
+			voice->gender = SvIV(newSVsv(*hv_fetch(spec, "gender", 6, 1)));
+		} else {
+			voice->gender = 0;
+		}
+
+		if (hv_exists(spec, "age", 3)) {
+			voice->age = SvIV(newSVsv(*hv_fetch(spec, "age", 3, 1)));
+		} else {
+			voice->age = 0;
+		}
+
+		if (hv_exists(spec, "variant", 7)) {
+			voice->variant = SvIV(newSVsv(*hv_fetch(spec, "variant", 7, 1)));
+		} else {
+			voice->variant = 0;
+		}
+
+		RETVAL = espeak_SetVoiceByProperties(voice);
+		free(voice);
+	OUTPUT:
+		RETVAL
+		
+
+HV *
 espeak_GetCurrentVoice()
+	INIT:
+		HV * result = (HV *)sv_2mortal((SV *)newHV());
+	CODE:
+		espeak_VOICE *voice = espeak_GetCurrentVoice();
+		hv_store(result, "name", 4, newSVpv(voice->name, 0), 0);
+		hv_store(result, "languages", 9, newSVpv(voice->languages, 0), 0);
+		hv_store(result, "identifier", 10, newSVpv(voice->identifier, 0), 0);
+		hv_store(result, "age", 3, newSViv(voice->age), 0);
+		hv_store(result, "gender", 6, newSViv(voice->gender), 0);
+		hv_store(result, "variant", 7, newSViv(voice->variant), 0);
+		RETVAL = result;
+	OUTPUT:
+		RETVAL
 
 IV
 espeak_Cancel()
@@ -389,100 +508,6 @@ espeak_Terminate()
 const char *
 espeak_Info(ptr)
 		void *		ptr
-
-void
-set_male_voice()
-	CODE:
-		espeak_VOICE *spec = espeak_GetCurrentVoice();
-		spec->gender = 1;
-		espeak_SetVoiceByProperties(spec);
-
-void
-set_female_voice()
-	CODE:
-		espeak_VOICE *spec = espeak_GetCurrentVoice();
-		spec->gender = 2;
-		espeak_SetVoiceByProperties(spec);
-
-MODULE = Speech::eSpeak  PACKAGE = Speech::eSpeak::VoicePtr  PREFIX = voice_
-
-void
-voice_DESTROY(self)
-		Speech_eSpeak_Voice *	self
-	CODE:
-		free(self);
-
-char *
-voice_name(self)
-		Speech_eSpeak_Voice * self
-        CODE:
-                RETVAL = self->name;
-        OUTPUT:
-                RETVAL
-
-char *
-voice_languages(self)
-                Speech_eSpeak_Voice *	self
-        CODE:
-                RETVAL = self->languages;
-        OUTPUT:
-                RETVAL
-
-char *
-voice_identifier(self)
-                Speech_eSpeak_Voice *   self
-        CODE:
-                RETVAL = self->identifier;
-        OUTPUT:
-                RETVAL
-
-unsigned char
-voice_gender(self)
-                Speech_eSpeak_Voice *   self
-        CODE:
-                RETVAL = self->gender;
-        OUTPUT:
-                RETVAL
-
-unsigned char
-voice_age(self)
-                Speech_eSpeak_Voice *   self
-        CODE:
-                RETVAL = self->age;
-        OUTPUT:
-                RETVAL
-
-unsigned char
-voice_variant(self)
-                Speech_eSpeak_Voice *   self
-        CODE:
-                RETVAL = self->variant;
-        OUTPUT:
-                RETVAL
-
-unsigned char
-voice_xx1(self)
-                Speech_eSpeak_Voice *   self
-        CODE:
-                RETVAL = self->xx1;
-        OUTPUT:
-                RETVAL
-
-int
-voice_score(self)
-                Speech_eSpeak_Voice *   self
-        CODE:
-                RETVAL = self->score;
-        OUTPUT:
-                RETVAL
-
-void *
-voice_spare(self)
-                Speech_eSpeak_Voice *   self
-        CODE:
-                RETVAL = self->spare;
-        OUTPUT:
-                RETVAL
 
 MODULE = Speech::eSpeak  PACKAGE = Speech::eSpeak::EventPtr  PREFIX = event_
 
