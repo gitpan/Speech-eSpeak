@@ -130,7 +130,7 @@ our @EXPORT = qw(
 	espeakVOLUME
 );
 
-our $VERSION = '0.2';
+our $VERSION = '0.21';
 
 sub AUTOLOAD {
     # This AUTOLOAD is used to 'autoload' constants from the constant()
@@ -551,7 +551,16 @@ Example:
 
 =head2 espeak_SetVoiceByProperties($voice_spec)
 
-Not implemented yet.
+Example:
+
+  my $spec = {name => "german",
+              languages => "",
+              identifier => "",
+              gender => 2,
+              age => 0,
+              variant = 0
+             };
+  espeak_SetVoiceByProperties($spec);
 
 =head2 espeak_GetCurrentVoice()
 
