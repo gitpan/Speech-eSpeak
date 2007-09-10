@@ -130,7 +130,7 @@ our @EXPORT = qw(
 	espeakVOLUME
 );
 
-our $VERSION = '0.21';
+our $VERSION = '0.22';
 
 sub AUTOLOAD {
     # This AUTOLOAD is used to 'autoload' constants from the constant()
@@ -508,6 +508,7 @@ If voice_spec is NULL then all voices are listed.
 If voice spec is give, then only the voices which are compatible with the voice_spec are listed, and they are listed in preference order.
 
 Example:
+
   # list all voices
   my $voices = espeak_ListVoices('');
   foreach my $voice_spec (@{$voices}) {
@@ -558,7 +559,7 @@ Example:
               identifier => "",
               gender => 2,
               age => 0,
-              variant = 0
+              variant => 0
              };
   espeak_SetVoiceByProperties($spec);
 
@@ -751,11 +752,6 @@ The parameter is for future use, and should be set to NULL.
 
   print 'version: ', espeak_Info(0), "\n";
 
-  my @voices = espeak_ListVoices('');
-  foreach (@voices) {
-    print $_->name;
-  }
-
   espeak_Terminate();
 
 =head1 EXAMPLE 2
@@ -771,7 +767,6 @@ The parameter is for future use, and should be set to NULL.
   # There maybe new variants in future. Just refer to directory espeak-data/voices/!v/
   espeak_SetVoiceByName(en+f2);
   $s = 'Hello Cameron';
-  espeak_Synth($s, length($s) + 1, 0, POS_CHARACTER, 0, $synth_flags, 0, 0);
   espeak_Synth($s, length($s) + 1, 0, POS_CHARACTER, 0, $synth_flags, 0, 0);
   espeak_Synchronize();
 
