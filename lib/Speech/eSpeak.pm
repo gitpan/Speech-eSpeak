@@ -1,6 +1,6 @@
 package Speech::eSpeak;
 
-use 5.008008;
+# use 5.008008;
 use strict;
 use warnings;
 use Carp;
@@ -130,7 +130,7 @@ our @EXPORT = qw(
 	espeakVOLUME
 );
 
-our $VERSION = '0.22';
+our $VERSION = '0.3';
 
 sub AUTOLOAD {
     # This AUTOLOAD is used to 'autoload' constants from the constant()
@@ -160,6 +160,88 @@ XSLoader::load('Speech::eSpeak', $VERSION);
 
 # Preloaded methods go here.
 
+sub new {
+  espeak_Initialize(AUDIO_OUTPUT_PLAYBACK(), 0, '', 0);
+
+  my $self = {};
+  bless $self, __PACKAGE__;
+  return $self;
+}
+
+sub DESTROY {
+  espeak_Synchronize();
+}
+
+sub speak {
+  my ($self, $text) = @_;
+
+  if (defined $text) {
+    espeak_Synth($text, do { use bytes; length($text) + 1 }, 0, POS_CHARACTER(), 0, espeakCHARS_AUTO() | espeakPHONEMES() | espeakENDPAUSE(), 0, 0);
+  } else {
+    carp('speaking text undefined!');
+  }
+}
+
+sub stop {
+  espeak_Cancel();
+}
+
+sub synchronize {
+  espeak_Synchronize();
+}
+
+sub is_playing {
+  return espeak_IsPlaying();
+}
+
+sub language {
+  my ($self, $lang) = @_;
+
+  if ($lang) {
+    return espeak_SetVoiceByName($lang);
+  } else {
+    my $voice = espeak_GetCurrentVoice();
+    return $voice->{identifier};
+  }
+}
+
+sub pitch {
+  my ($self, $pitch) = @_;
+
+  if (defined $pitch) {
+    espeak_SetParameter(espeakPITCH(), $pitch, 0);
+  } else {
+    espeak_GetParameter(espeakPITCH(), 1);
+  }
+}
+
+sub range {
+  my ($self, $range) = @_;
+  if (defined $range) {
+    espeak_SetParameter(espeakRANGE(), $range, 0);
+  } else {
+    espeak_GetParameter(espeakRANGE(), 1);
+  }
+}
+
+sub rate {
+  my ($self, $rate) = @_;
+  if ($rate) {
+    espeak_SetParameter(espeakRATE(), $rate, 0);
+  } else {
+    espeak_GetParameter(espeakRATE(), 1);
+  }
+}
+
+sub volume {
+  my ($self, $volume) = @_;
+  if (defined $volume) {
+    espeak_SetParameter(espeakVOLUME(), $volume, 0);
+  } else {
+    espeak_GetParameter(espeakVOLUME(), 1);
+  }
+}
+
 # Autoload methods go after =cut, and are processed by the autosplit program.
 
 1;
@@ -172,12 +254,9 @@ Speech::eSpeak - Perl extension for eSpeak text to speech
 
 =head1 SYNOPSIS
 
-  use Speech::eSpeak ':all';
-  espeak_Initialize(AUDIO_OUTPUT_PLAYBACK, 0, '');
-  my $synth_flags = espeakCHARS_AUTO | espeakPHONEMES | espeakENDPAUSE;
-  my $text = 'hello world';
-  espeak_Synth($text, length($text) + 1, 0, POS_CHARACTER, 0, $synth_flags, 0, 0);
-  espeak_Synchronize();
+  use Speech::eSpeak;
+  $speaker = Speech::eSpeak::new();
+  $speaker->speak('hello world');
 
 =head1 DESCRIPTION
 
@@ -228,7 +307,71 @@ None by default.
   espeakSSML
   espeakVOLUME
 
-=head1 FUNCTIONS
+=head1 FUNCTIONS(simplified)
+
+=head2 new()
+
+Initialize speaker. Only one object should be created. Or unexpected error will occured.
+
+=head2 speak($text)
+
+Speak $text.
+
+=head2 synchronize()
+
+It won't return until all speech in the buffer finished.
+
+=head2 stop()
+
+Stop speaking.
+
+=head2 is_playing()
+
+Return whether the speak is playing. 1 for playing, 0 otherwise.
+
+=head2 language($language)
+
+If $language is specified, it is set as current language. Or current value is returned.
+
+Return:
+
+=over 4
+
+=item
+
+Current language if parameter $language is not specified.
+
+=item
+
+EE_OK: operation achieved
+
+=item
+
+EE_BUFFER_FULL: the command can not be buffered; you may try after a while to call the function again.
+
+=item
+
+EE_INTERNAL_ERROR.
+
+=back
+
+=head2 pitch($pitch)
+
+If $pitch is specified, it is set as base pitch. Or current pitch is returned. The range of pitch is 0 to 100. 50 is normal.
+
+=head2 range($range)
+
+If $range is specified, it is set as pitch range. Or current range is returned. The value of range is from 0 to 100. 0 for monotone and 50 is normal.
+
+=head2 rate($rate)
+
+If $rage is specified, it is set as the speaking speed in word per minute. Or current rate is returned. 170 is the initial value.
+
+=head2 volume($volume)
+
+If $volume is specified, it is set as the volume. Or current volume is returned. The value is from 0 to 100. 0 for silence.
+
+=head1 FUNCTIONS(standard)
 
 =head2 espeak_SetSynthCallback($callback)
 
@@ -786,6 +929,22 @@ The parameter is for future use, and should be set to NULL.
   $s = 'Guten Tag!';
   espeak_Synth($s, length($s) + 1, 0, POS_CHARACTER, 0, $synth_flags, 0, 0);
   espeak_Synchronize();
+
+=head1 EXAMPLE 4
+
+  use Speech::eSpeak;
+
+  $speaker = Speech::eSpeak::new();
+  $speaker->speak('hello world');
+  $speaker->pitch(100);
+  $speaker->speak('hello world');
+  $speaker->range(100);
+  $speaker->speak('hello world');
+  $speaker->synchronize();
+  $speaker->rate($speaker->rate / 2);
+  $speaker->speak('Do you mean I am too talky?');
+  sleep(1);
+  $speaker->stop() if ($speaker->is_playing);
 
 =head1 SEE ALSO
 

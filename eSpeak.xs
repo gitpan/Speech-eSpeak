@@ -14,29 +14,46 @@
 typedef espeak_EVENT Speech_eSpeak_Event;
 
 static SV * perl_synthcallback = (SV*)NULL;
+static SV * perl_uricallback = (SV*)NULL;
 
-int c_synthcallback(short *wav, int numsamples, espeak_EVENT *events)
+int c_uricallback(int type, const char *uri, const char *base)
 {
+}
+
+int c_synthcallback(short *wav, int numsamples, SV* events)
+{
+/*
 	printf("enter c_synthcallback\n");
-	printf("wav:, numsamples:%d, events:%d\n", numsamples, events->unique_identifier);
+	espeak_EVENT *event = (espeak_EVENT*) SvRV(events);
+	printf("wav:, numsamples:%d, events:%d\n", numsamples, event->unique_identifier);
 	if (perl_synthcallback == NULL) {
 		printf("NULL\n");
 	}
-/*
+
 	dSP;
 	ENTER;
 	SAVETMPS;
 	PUSHMARK(SP);
-	XPUSHs(sv_2mortal(newSVpv((SV*)wav, (size_t)strlen(wav))));
+	XPUSHs(sv_2mortal(newSVpvn((char*)wav, numsamples)));
 	XPUSHs(sv_2mortal(newSViv(numsamples)));
-	XPUSHs(sv_2mortal(newSVsv((SV*)events)));
+	XPUSHs(sv_2mortal(newSViv(event->type)));
+	XPUSHs(sv_2mortal(newSViv(event->unique_identifier)));
+	XPUSHs(sv_2mortal(newSViv(event->text_position)));
+	XPUSHs(sv_2mortal(newSViv(event->audio_position)));
+	XPUSHs(sv_2mortal(newSVsv(event->user_data)));
+	if (event->type == espeakEVENT_WORD || event->type == espeakEVENT_SENTENCE || espeakEVENT_PHONEME) {
+		XPUSHs(sv_2mortal(newSViv(event->id.number)));
+	} else if (event->type == espeakEVENT_MARK || event->type == espeakEVENT_PLAY) {
+		XPUSHs(sv_2mortal(newSVpv(event->id.name, 0)));
+	}
 	PUTBACK;
 
 	call_sv(perl_synthcallback, G_SCALAR);
 	FREETMPS;
 	LEAVE;
-*/
+
 	return 0;
+*/
 }
 
 MODULE = Speech::eSpeak		PACKAGE = Speech::eSpeak		
@@ -190,11 +207,17 @@ espeak_SetSynthCallback(SynthCallback)
 			perl_synthcallback = newSVsv((SV*)SynthCallback);
 		else
 			SvSetSV(perl_synthcallback, (SV*)SynthCallback);
-		espeak_SetSynthCallback(c_synthcallback);
+		espeak_SetSynthCallback((t_espeak_callback*)c_synthcallback);
 
 void
 espeak_SetUriCallback(UriCallback)
 		SV*		UriCallback
+	CODE:
+		if (perl_uricallback == (SV*)NULL)
+			perl_uricallback = newSVsv((SV*)UriCallback);
+		else
+			SvSetSV(perl_uricallback, (SV*)UriCallback);
+		espeak_SetUriCallback(c_uricallback);
 
 IV
 espeak_Synth(text, size, positon, position_type, end_position, flags, unique_identifier, user_data)
