@@ -130,7 +130,7 @@ our @EXPORT = qw(
 	espeakVOLUME
 );
 
-our $VERSION = '0.3';
+our $VERSION = '0.4';
 
 sub AUTOLOAD {
     # This AUTOLOAD is used to 'autoload' constants from the constant()
@@ -161,7 +161,10 @@ XSLoader::load('Speech::eSpeak', $VERSION);
 # Preloaded methods go here.
 
 sub new {
-  espeak_Initialize(AUDIO_OUTPUT_PLAYBACK(), 0, '', 0);
+  my %args = @_;
+  $args{datadir} ||= "/usr/share";
+
+  espeak_Initialize(AUDIO_OUTPUT_PLAYBACK(), 0, $args{datadir}, 0);
 
   my $self = {};
   bless $self, __PACKAGE__;
@@ -260,7 +263,7 @@ Speech::eSpeak - Perl extension for eSpeak text to speech
 
 =head1 DESCRIPTION
 
-eSpeak is a compact open source software speech synthesizer for English and other languages. It's written by Jonathan Duddington. You can find more information from L<http://espeak.sourceforge.net>. This package is direct binding for eSpeak, which is based on the API of speak_lib.h.
+eSpeak is a compact open source software speech synthesizer for English and other languages. It's written by Jonathan Duddington. You can find more information from L<http://espeak.sourceforge.net>. This package is direct binding for eSpeak, which is based on the API (version 6) of speak_lib.h.
 
 =head2 EXPORT
 
@@ -309,9 +312,11 @@ None by default.
 
 =head1 FUNCTIONS(simplified)
 
-=head2 new()
+=head2 new({ datadir => '/opt/espeak' })
 
 Initialize speaker. Only one object should be created. Or unexpected error will occured.
+Pass a hashref with key datadir pointing to a directory of where to find the
+vendor specific '/espeak-data' data dir. Defaults to /usr/share.
 
 =head2 speak($text)
 
@@ -855,7 +860,7 @@ The parameter is for future use, and should be set to NULL.
         unsigned char gender;  // 0=none 1=male, 2=female,
         unsigned char age;     // 0=not specified, or age in years
         unsigned char variant; // only used when passed as a parameter to espeak_SetVoiceByProperties
-        unsigned char xx1;     // for internal use 
+        unsigned char xx1;     // for internal use
         int score;       // for internal use
         void *spare;     // for internal use
    } espeak_VOICE;
@@ -952,7 +957,11 @@ eSpeak Documents, speak_lib.h, L<http://espeak.sourceforge.net>, L<eGuideDog::Fe
 
 =head1 AUTHOR
 
-Cameron Wong, E<lt>hgn823-perl at yahoo.com.cnE<gt>, L<http://e-guidedog.sourceforge.net>
+Cameron Wong, E<lt>hgneng at yahoo.com.cnE<gt>, L<http://www.eguidedog.net>
+
+=head1 CONTRIBUTORS
+
+Paulo Edgar Castro E<lt>pauloedgarcastro at gmail.comE<gt>
 
 =head1 SUPPORT
 
@@ -970,7 +979,7 @@ eSpeak TTS is designed by Jonathan Duddington. L<http://espeak.sourceforge.net>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2007 by Cameron Wong
+Copyright (C) 2007-2012 by Cameron Wong
 
 This library is free software; you can redistribute it and/or modify it under the same terms as Perl itself, either Perl version 5.8.8 or, at your option, any later version of Perl 5 you may have available.
 

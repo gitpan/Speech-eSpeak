@@ -367,9 +367,10 @@ espeak_SetPhonemeTrace(value, stream)
 		FILE *		stream
 
 void
-espeak_CompileDictionary(path, log)
+espeak_CompileDictionary(path, log, flags)
 		const char *	path
 		FILE *		log
+    int flags
 
 SV *
 espeak_ListVoices(voice_spec)

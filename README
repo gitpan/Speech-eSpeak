@@ -1,4 +1,4 @@
-Speech-eSpeak version 0.11
+Speech-eSpeak version 0.4
 ==========================
 
 This is a Perl binding for eSpeak TTS.
@@ -36,7 +36,7 @@ This module requires these other modules and libraries:
 
 COPYRIGHT AND LICENCE
 
-Copyright (C) 2007 by Cameron Wong
+Copyright (C) 2007-2012 by Cameron Wong
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.8 or,
